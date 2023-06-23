@@ -150,7 +150,7 @@ if __name__ == "__main__":
         validation = validators.url(args.URL)
 
         if not validation:
-            raise ValueError(f"Url {Fore.BLUE}{args.URL}{Style.RESET_ALL} is invalid.")
+            raise ValueError(f"Url {Style.BRIGHT}{Fore.BLUE}{args.URL}{Style.RESET_ALL} is invalid.")
         run_spider(args.URL, args.level, args.path, args.recursive)
     except Exception as e:
         logger_error(f"on line {Fore.RED}{sys.exc_info()[-1].tb_lineno}{Style.RESET_ALL}: {e}")
