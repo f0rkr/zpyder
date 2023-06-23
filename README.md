@@ -29,9 +29,9 @@ A simple program to extract all the images from a website, recursively.
 
 To recursively download all the images from the website `https://example.com`, run the following command:
 
-
-./zpyder -r https://example.com
-
+```bash
+> ./zpyder -r https://example.com
+```
 
 This will download all the images in the website, including the images in subdirectories.
 
