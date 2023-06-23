@@ -14,65 +14,48 @@ import threading
 import validators
 import random
 import string
+import signal
 from colorama import Fore, Style
 
 
 
 allowed_extension = ['PNG', 'png', 'JPG', 'jpg', 'JPEG', 'jpeg', 'GIF', 'gif', 'BMP', 'bmp']
 
+
+# Handling SIGINT signal
+def signal_handler(sig, frame):
+    logger_info("Signal caught: Exiting")
+    sys.exit(0)
 # Defining Loggers
 def logger_error(string):
-    print(f"{Fore.RED}[?]{Style.RESET_ALL} Error: on line " + string)
+    print(f"{Fore.RED}[?]{Style.RESET_ALL} Error: " + string)
 
 def logger_info(string):
     print(f"{Fore.YELLOW}[!] "+string+f"{Style.RESET_ALL}")
 
 def logger_valid(string):
-    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} "+string)
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} {Style.BRIGHT}{string}{Style.RESET_ALL}")
 
 
-def log_level_example():
-    logger.debug("Debugging message")
-    logger.info("Informational message")
-    logger.warning("Warning message")
-    logger.error("Error message")
-    logger.critical("Critical message")
+
 
 # -*- coding: utf-8 -*-
 def print_banner():
-    print('''
-     ▄▄▄▄▄▄▄ ▄▄▄▄▄▄▄ ▄▄▄ ▄▄▄▄▄▄  ▄▄▄▄▄▄▄ ▄▄▄▄▄▄
-    █       █       █   █      ██       █   ▄  █
-    █  ▄▄▄▄▄█    ▄  █   █  ▄    █    ▄▄▄█  █ █ █
-    █ █▄▄▄▄▄█   █▄█ █   █ █ █   █   █▄▄▄█   █▄▄█▄
-    █▄▄▄▄▄  █    ▄▄▄█   █ █▄█   █    ▄▄▄█    ▄▄  █
-     ▄▄▄▄▄█ █   █   █   █       █   █▄▄▄█   █  █ █
-    █▄▄▄▄▄▄▄█▄▄▄█   █▄▄▄█▄▄▄▄▄▄██▄▄▄▄▄▄▄█▄▄▄█  █▄█
-
-    Welcome to the Spider Program
+    print('''                                                          
+    ███▀▀▀███▄█▀▀▀█▄████▀▀▀██▄▀███▀   ▀██▀███▀▀▀██▄ ▀███▀▀▀███▀███▀▀▀██▄  
+    █▀   ███▄██    ▀█ ██   ▀██▄ ███   ▄█   ██    ▀██▄ ██    ▀█  ██   ▀██▄ 
+    ▀   ███ ▀███▄     ██   ▄██   ███ ▄█    ██     ▀██ ██   █    ██   ▄██  
+       ███    ▀█████▄ ███████     ████     ██      ██ ██████    ███████   
+      ███   ▄     ▀██ ██           ██      ██     ▄██ ██   █  ▄ ██  ██▄   
+     ███   ▄██     ██ ██           ██      ██    ▄██▀ ██     ▄█ ██   ▀██▄ 
+    █████████▀█████▀▄████▄       ▄████▄  ▄████████▀ ▄██████████████▄ ▄███▄
+                                                         
+    Welcome to the Zspyer Program :)
     Author: f0rkr
 
     This program downloads all images recursively from a website,
     This program will only download images that have the following extensions: .jpg/jpeg, .png, .gif, and .bmp.
   ''')
-
-
-# Get_encoding function
-# Return the encoding type for the http response
-def get_encoding(header):
-    encoding = header['Content-Type'].split('charset=')[-1]
-    return encoding
-
-
-# Get_base_url function
-# get the base url from the full url and returns it
-def get_base_url(url):
-    match = re.match(r'(https?://[^/]+)/?', url)
-    if match:
-        return match.group(1)
-    else:
-        return None
-
 
 # Get_image_name function
 # Returns image name from image_object using alt tag
@@ -97,7 +80,7 @@ def download_image(url, image_object, path, level):
     filename = get_image_name(image_object, path)
     filepath = os.path.join(path, filename)
     full_url = urllib.parse.urljoin(url, image_object['src'])
-    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} LEVEL: {Fore.GREEN}{level}{Style.RESET_ALL} Downloading image: {Fore.GREEN}{filename}{Style.RESET_ALL}, from url: {url}{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} LEVEL: {Fore.GREEN}{level}{Style.RESET_ALL} Downloading image: {Fore.GREEN}{filename}{Style.RESET_ALL}, from url: {Style.BRIGHT}{Fore.BLUE}{url}{Style.RESET_ALL}")
     response = requests.get(full_url)
     with open(filepath, 'wb') as f:
         f.write(response.content)
@@ -123,7 +106,7 @@ def extracting_images(url, level, path, soup, recursive=False):
                     logger_info(f"Next url: {next_url}".format(next_url))
                     run_spider(next_url, level - 1, path, recursive)
                 except Exception as exception:
-                    logger_error(f"Error: on line {Fore.RED}{sys.exc_info()[-1].tb_lineno}{Style.RESET_ALL}: {exception}")
+                    logger_error(f"on line {Fore.RED}{sys.exc_info()[-1].tb_lineno}{Style.RESET_ALL}: {exception}")
 
 
 def run_spider(url, level, path, recursive=False):
@@ -131,8 +114,10 @@ def run_spider(url, level, path, recursive=False):
     hdr = {'User-Agent': 'Mozilla/5.0'}
     proxy_host = '158.69.53.98:9300'
 
-    http_data = Request(url, headers=hdr)
-
+    try:
+        http_data = Request(url, headers=hdr)
+    except urllib.error.URLError as e:
+        logger_error(f"{e.read().decode('utf8', 'ignore')}")
     # Parsing the html page with BeautifulSoup
     soup = BeautifulSoup(urlopen(http_data), features="html.parser")
 
@@ -142,6 +127,9 @@ def run_spider(url, level, path, recursive=False):
 if __name__ == "__main__":
     # Display program banner
     print_banner()
+
+    # Signal Handler
+    signal.signal(signal.SIGINT, signal_handler)
 
     # TO-DO: Parsing arguments using argparse
     parser = argparse.ArgumentParser(
@@ -169,5 +157,5 @@ if __name__ == "__main__":
             raise ValueError(f"Url {Fore.BLUE}{args.URL}{Style.RESET_ALL} is invalid.")
         run_spider(args.URL, args.level, args.path, args.recursive)
     except Exception as e:
-        logger_error(f"{Fore.RED}{sys.exc_info()[-1].tb_lineno}{Style.RESET_ALL}: {e}")
+        logger_error(f"on line {Fore.RED}{sys.exc_info()[-1].tb_lineno}{Style.RESET_ALL}: {e}")
 # EOF
