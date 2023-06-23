@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import os.path
 import sys
 import traceback
@@ -11,9 +12,31 @@ import argparse
 import re
 import threading
 import validators
+import random
+import string
+from colorama import Fore, Style
+
+
 
 allowed_extension = ['PNG', 'png', 'JPG', 'jpg', 'JPEG', 'jpeg', 'GIF', 'gif', 'BMP', 'bmp']
 
+# Defining Loggers
+def logger_error(string):
+    print(f"{Fore.RED}[?]{Style.RESET_ALL} Error: on line " + string)
+
+def logger_info(string):
+    print(f"{Fore.YELLOW}[!] "+string+f"{Style.RESET_ALL}")
+
+def logger_valid(string):
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} "+string)
+
+
+def log_level_example():
+    logger.debug("Debugging message")
+    logger.info("Informational message")
+    logger.warning("Warning message")
+    logger.error("Error message")
+    logger.critical("Critical message")
 
 # -*- coding: utf-8 -*-
 def print_banner():
@@ -54,13 +77,16 @@ def get_base_url(url):
 # Get_image_name function
 # Returns image name from image_object using alt tag
 # or else getting the name from the src url
-def get_image_name(image_object):
+def get_image_name(image_object, path):
     # filename = os.path.basename(''.join(random.choice(string.ascii_lowercase) for i in range(16)) + "." +
     # src.split('.')[-1])
     # if image_object.get('alt'):
     #     extension = image_object.get('src').split('.')[-1]
     #     image_name = image_object['alt'].replace(' ', '-').replace('/', '').split('.')[0]
     #     return image_name + "." + extension
+    file_path = os.path.join(path, os.path.basename(image_object['src']))
+    if os.path.exists(file_path):
+        return os.path.basename(''.join(random.choice(string.ascii_lowercase) for i in range(16)) + "." +image_object['src'].split('.')[-1])
     return os.path.basename(image_object['src'])
 
 
@@ -68,10 +94,10 @@ def get_image_name(image_object):
 # Get the url and image_object then it extract the image from
 # the website and save it to a file
 def download_image(url, image_object, path, level):
-    filename = get_image_name(image_object)
+    filename = get_image_name(image_object, path)
     filepath = os.path.join(path, filename)
     full_url = urllib.parse.urljoin(url, image_object['src'])
-    print("[+] LEVEL: {0} Downloading image: {1}, from url: {2}".format(level, filename, url))
+    print(f"{Fore.GREEN}[+]{Style.RESET_ALL} LEVEL: {Fore.GREEN}{level}{Style.RESET_ALL} Downloading image: {Fore.GREEN}{filename}{Style.RESET_ALL}, from url: {url}{Style.RESET_ALL}")
     response = requests.get(full_url)
     with open(filepath, 'wb') as f:
         f.write(response.content)
@@ -92,12 +118,12 @@ def extracting_images(url, level, path, soup, recursive=False):
     if level > 0 and recursive:
         for page in linked_pages:
             if page.get('href'):
-                next_url = urllib.parse.urljoin(url, page['href'])
-                print("NEXT URL: {0}".format(next_url))
                 try:
+                    next_url = urllib.parse.urljoin(url, page['href'])
+                    logger_info(f"Next url: {next_url}".format(next_url))
                     run_spider(next_url, level - 1, path, recursive)
                 except Exception as exception:
-                    print("[?] Error: on line {0}: {1}".format(sys.exc_info()[-1].tb_lineno, exception))
+                    logger_error(f"Error: on line {Fore.RED}{sys.exc_info()[-1].tb_lineno}{Style.RESET_ALL}: {exception}")
 
 
 def run_spider(url, level, path, recursive=False):
@@ -112,7 +138,6 @@ def run_spider(url, level, path, recursive=False):
 
     # Extract all images using the images object found in the parse html request
     extracting_images(url, level, path, soup, recursive)
-
 
 if __name__ == "__main__":
     # Display program banner
@@ -135,16 +160,14 @@ if __name__ == "__main__":
 
     if not os.path.exists(args.path):
         os.mkdir(args.path)
-
     try:
-        print("[!] Running with the following arguments.")
-        print("[+] url: {0}, level: {1}, path: {2}, recursive: {3}".format(args.URL, args.level, args.path,
-                                                                           args.recursive))
+        logger_info("Running with the following arguments.")
+        logger_valid(f"{Style.BRIGHT}url: {Fore.BLUE}{args.URL}{Style.RESET_ALL}, level: {Fore.GREEN}{args.level}{Style.RESET_ALL}, path: {Fore.GREEN}{args.path}{Style.RESET_ALL}, recursive: {Fore.GREEN}{args.recursive}{Style.RESET_ALL}")
         validation = validators.url(args.URL)
 
         if not validation:
-            raise ValueError("Url {0} is invalid.".format(args.URL))
+            raise ValueError(f"Url {Fore.BLUE}{args.URL}{Style.RESET_ALL} is invalid.")
         run_spider(args.URL, args.level, args.path, args.recursive)
     except Exception as e:
-        print("[?] Error: on line {0}: {1}".format(sys.exc_info()[-1].tb_lineno, e))
+        logger_error(f"{Fore.RED}{sys.exc_info()[-1].tb_lineno}{Style.RESET_ALL}: {e}")
 # EOF
