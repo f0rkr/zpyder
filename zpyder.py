@@ -1,22 +1,19 @@
 #!/usr/bin/env python
 
-import os.path
-import sys
-import traceback
-from urllib.parse import urljoin
-from bs4 import BeautifulSoup
-import requests
 from urllib.request import Request, urlopen, HTTPError
-import urllib
-import argparse
-import re
-import threading
+from urllib.parse import urljoin
+from colorama import Fore, Style
+from bs4 import BeautifulSoup
 import validators
+import traceback
+import argparse
+import requests
+import os.path
+import urllib
 import random
 import string
 import signal
-from colorama import Fore, Style
-
+import sys
 
 
 allowed_extension = ['PNG', 'png', 'JPG', 'jpg', 'JPEG', 'jpeg', 'GIF', 'gif', 'BMP', 'bmp']
@@ -26,6 +23,7 @@ allowed_extension = ['PNG', 'png', 'JPG', 'jpg', 'JPEG', 'jpeg', 'GIF', 'gif', '
 def signal_handler(sig, frame):
     logger_info("Signal caught: Exiting")
     sys.exit(0)
+
 # Defining Loggers
 def logger_error(string):
     print(f"{Fore.RED}[?]{Style.RESET_ALL} Error: " + string)
@@ -36,21 +34,19 @@ def logger_info(string):
 def logger_valid(string):
     print(f"{Fore.GREEN}[+]{Style.RESET_ALL} {Style.BRIGHT}{string}{Style.RESET_ALL}")
 
-
-
-
 # -*- coding: utf-8 -*-
 def print_banner():
-    print('''                                                          
-    ███▀▀▀███▄█▀▀▀█▄████▀▀▀██▄▀███▀   ▀██▀███▀▀▀██▄ ▀███▀▀▀███▀███▀▀▀██▄  
-    █▀   ███▄██    ▀█ ██   ▀██▄ ███   ▄█   ██    ▀██▄ ██    ▀█  ██   ▀██▄ 
-    ▀   ███ ▀███▄     ██   ▄██   ███ ▄█    ██     ▀██ ██   █    ██   ▄██  
-       ███    ▀█████▄ ███████     ████     ██      ██ ██████    ███████   
-      ███   ▄     ▀██ ██           ██      ██     ▄██ ██   █  ▄ ██  ██▄   
-     ███   ▄██     ██ ██           ██      ██    ▄██▀ ██     ▄█ ██   ▀██▄ 
-    █████████▀█████▀▄████▄       ▄████▄  ▄████████▀ ▄██████████████▄ ▄███▄
+    print('''                                                                                                                  
+    ███▀▀▀██████▀▀▀██▄▀███▀   ▀██▀███▀▀▀██▄ ▀███▀▀▀███▀███▀▀▀██▄  
+    █▀   ███  ██   ▀██▄ ███   ▄█   ██    ▀██▄ ██    ▀█  ██   ▀██▄ 
+    ▀   ███   ██   ▄██   ███ ▄█    ██     ▀██ ██   █    ██   ▄██  
+       ███    ███████     ████     ██      ██ ██████    ███████   
+      ███   ▄ ██           ██      ██     ▄██ ██   █  ▄ ██  ██▄   
+     ███   ▄█ ██           ██      ██    ▄██▀ ██     ▄█ ██   ▀██▄ 
+    █████████████▄       ▄████▄  ▄████████▀ ▄██████████████▄ ▄███▄
+                                                              
                                                          
-    Welcome to the Zspyer Program :)
+    Welcome to the Zpyder Program :)
     Author: f0rkr
 
     This program downloads all images recursively from a website,
