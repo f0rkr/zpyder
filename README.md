@@ -1,6 +1,5 @@
 # Zpyder
-
-A simple program to extract all the images from a website, recursively.
+<img src="https://wallpapers.com/images/hd/spider-web-of-rui-demon-slayer-qgwdc9nf0aqw1lb1.jpg">
 
 ## Usage
 
